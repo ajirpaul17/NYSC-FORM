@@ -8,7 +8,8 @@
     body{font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:20px}
     button{padding:12px 18px;font-size:16px;border:0;border-radius:6px;background:#1a73e8;color:#fff;width:100%}
     button:disabled{opacity:.6}
-    input,textarea{width:100%;padding:10px;margin:6px 0 14px;box-sizing:border-box;font-size:16px}
+    label{font-weight:bold;display:block}
+    input,textarea,select{width:100%;padding:10px;margin:6px 0 14px;box-sizing:border-box;font-size:16px}
     .msg{padding:10px;border-radius:6px;margin:12px 0}
     .err{background:#fde8e8;color:#b00020}.ok{background:#e6f4ea;color:#137333}
     .hidden{display:none}
@@ -25,17 +26,50 @@
 
   <form id="form" class="hidden">
     <div id="locInfo" class="msg ok"></div>
-    <label>Name</label><input id="name" required>
-    <label>Email</label><input id="email" type="email" required>
-    <label>Comment</label><textarea id="comment" rows="3"></textarea>
+    <div id="fields"></div>
     <button type="submit" id="sendBtn">Submit</button>
     <div id="formMsg" class="msg hidden"></div>
   </form>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbyirCjoFzIwrAE61vH7FRZ_7C95G2l6G8nIHDrhNaGGkP7AKPVi81ukH9ml5RmIPO1s/exec';
+
+// ====== EDIT YOUR QUESTIONS HERE ======
+// type: text | email | tel | number | textarea | select
+// For select, add options: ['A','B','C']
+// Add  upper: true  to turn the answer into capital letters
+const QUESTIONS = [
+  { label: 'Full name',  type: 'text', required: true },
+  { label: 'State code', type: 'text', required: true, upper: true, placeholder: 'e.g. LA/25A/1234' },
+{ label: 'Gender', type: 'select', required: true, options: ['Male', 'Female'] },
+  { label: 'Phone number', type: 'tel', required: false },
+  { label: 'Comment', type: 'textarea', required: false }
+];
+// ======================================
+
 let pos = null;
 const $ = id => document.getElementById(id);
+
+// Build the form from the QUESTIONS list
+QUESTIONS.forEach((q, i) => {
+  const wrap = document.createElement('div');
+  const lab = document.createElement('label');
+  lab.textContent = q.label + (q.required ? ' *' : '');
+  lab.htmlFor = 'q' + i;
+  let el;
+  if (q.type === 'textarea') { el = document.createElement('textarea'); el.rows = 3; }
+  else if (q.type === 'select') {
+    el = document.createElement('select');
+    el.innerHTML = '<option value="">Select...</option>' +
+      q.options.map(o => '<option>' + o + '</option>').join('');
+  } else { el = document.createElement('input'); el.type = q.type || 'text'; }
+  el.id = 'q' + i;
+  if (q.required) el.required = true;
+  if (q.placeholder) el.placeholder = q.placeholder;
+  if (q.upper) el.addEventListener('input', () => { el.value = el.value.toUpperCase(); });
+  wrap.append(lab, el);
+  $('fields').appendChild(wrap);
+});
 
 $('locBtn').onclick = () => {
   $('gateMsg').classList.add('hidden');
@@ -66,12 +100,12 @@ $('form').onsubmit = async ev => {
   if (!pos) return;
   const btn = $('sendBtn'), msg = $('formMsg');
   btn.disabled = true; btn.textContent = 'Submitting...'; msg.classList.add('hidden');
+
+  const answers = QUESTIONS.map((q, i) => ({ q: q.label, a: $('q' + i).value.trim() }));
   try {
     const res = await fetch(API_URL, {
-      method: 'POST',   // no custom headers, so no CORS preflight
-      body: JSON.stringify({
-        name: $('name').value, email: $('email').value, comment: $('comment').value,
-        lat: pos.lat, lng: pos.lng, accuracy: pos.accuracy })
+      method: 'POST',
+      body: JSON.stringify({ answers, lat: pos.lat, lng: pos.lng, accuracy: pos.accuracy })
     });
     const r = await res.json();
     if (!r.ok) throw new Error(r.error || 'Submission failed.');
