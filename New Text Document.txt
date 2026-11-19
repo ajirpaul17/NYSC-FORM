@@ -44,7 +44,7 @@ const QUESTIONS = [
   { label: 'State code', type: 'text', required: true, upper: true, placeholder: 'e.g. LA/25A/1234' },
   { label: 'Gender', type: 'select', required: true, options: ['Male', 'Female'] },
   { label: 'Location of outreach', type: 'select', required: true, options: ['Ikeja', 'Obalende', 'Excused by coordinator', 'Other'] },
-  { label: 'Phone number', type: 'tel', required: true }
+  { label: 'Phone number', type: 'tel', required: true },
 ];
 // ======================================
 
