@@ -38,12 +38,13 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbyirCjoFzIwrAE61vH7FRZ_
 // type: text | email | tel | number | textarea | select
 // For select, add options: ['A','B','C']
 // Add  upper: true  to turn the answer into capital letters
+// Do not use the labels "Area" or "Address" (the Sheet uses them automatically)
 const QUESTIONS = [
   { label: 'Full name',  type: 'text', required: true },
   { label: 'State code', type: 'text', required: true, upper: true, placeholder: 'e.g. LA/25A/1234' },
-{ label: 'Gender', type: 'select', required: true, options: ['Male', 'Female'] },
-  { label: 'Phone number', type: 'tel', required: false },
-  { label: 'Comment', type: 'textarea', required: false }
+  { label: 'Gender', type: 'select', required: true, options: ['Male', 'Female'] },
+  { label: 'Location of outreach', type: 'select', required: true, options: ['Ikeja', 'Obalende', 'Excused by coordinator', 'Other'] },
+  { label: 'Phone number', type: 'tel', required: true }
 ];
 // ======================================
 
